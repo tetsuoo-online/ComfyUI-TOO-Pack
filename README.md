@@ -583,7 +583,7 @@ seed = 42
 `.epub`, `.pdf`, `.mobi`
 
 **Folders**
-Subfolders are treated as individual items (unless `scan_subfolders` enabled)
+Subfolders are treated as individual items (unless `scan_subfolders` is enabled)
 
 #### Recommended Models
 
@@ -623,42 +623,12 @@ Subfolders are treated as individual items (unless `scan_subfolders` enabled)
 
 ---
 
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Node not appearing in ComfyUI**
-- Restart ComfyUI after installation
-- Check that the folder is named `ComfyUI-TOO-Pack`
-- Verify all Python dependencies are installed
-
-**Import errors**
-```bash
-# Install missing dependencies
-pip install pillow numpy torch
-```
-
-**Ollama connection issues (Collection Categorizer)**
-- Verify Ollama is running: `ollama serve`
-- Check port: `http://localhost:11434`
-
----
-
-## 📝 Notes
-
-- All nodes are designed to work independently or together
-- Nodes auto-update when workflow changes
-- Compatible with ComfyUI's native features
-- Fully offline operation (except for model downloads)
-
----
 
 ## 🗺️ Roadmap
 
-- [ ] More image manipulation nodes
+- [ ] No roadmap x)
 - [ ] Advanced workflow utilities
 - [ ] Integration with more external tools
-- [ ] Video processing nodes
 
 ---
 
@@ -680,8 +650,6 @@ MIT License
 - **ComfyUI** - Amazing node-based interface
 - **Ollama** - Local LLM runtime
 - **Krita** - Open-source digital painting software
-- **PIL/Pillow** - Image manipulation library
-- **PyTorch** - Deep learning framework
 
 ---
 
