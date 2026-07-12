@@ -1,5 +1,5 @@
 # ComfyUI-TOO-Pack 🎨
-<img width="2398" height="1304" alt="image" src="https://github.com/user-attachments/assets/f873d352-db24-4751-b2a8-760789c7ff68" />
+<img width="1199" height="652" alt="image" src="https://github.com/user-attachments/assets/f873d352-db24-4751-b2a8-760789c7ff68" />
 
 **Tetsuoo's custom nodes pack for ComfyUI**
 
@@ -36,6 +36,9 @@ git clone https://github.com/tetsuoo-online/Comfyui-TOO-Pack
 | [Smart Image Saver](#smart-image-saver-) | `TOO-Pack/image` | Intelligent saver with flexible naming and metadata |
 | [Smart Image Saver (Advanced)](#smart-image-saver-advanced-) | `TOO-Pack/image` | Advanced saver with dynamic naming and A1111/Civitai metadata |
 | [TOO Crop Image](#too-crop-image-) | `TOO-Pack/image` | Interactive cropping tool  |
+| [TOO Lora Grid](#too-lora-grid-) | `TOO-Pack/image` | Special KSampler for making LoRA grids  |
+| [TOO Lora Grid Advanced](#too-lora-grid-advanced-) | `TOO-Pack/image` | Advanced KSampler for making LoRA grids - Adapted from SamplerCustomAdvanced node |
+| [TOO Image Grid From Batch with Alpha](#too-image-grid-from-batch) | `TOO-Pack/image` | Grid from batch that preserves the alpha channel |
 | [TOO lmage Metadata](#too-image-metadata-) | `TOO-Pack/image` | Metadata editing  |
 | [Krita Bridge](#krita-bridge-) | `TOO-Pack/image` | Auto-load images from Krita |
 | [Extract Widget From Node](#extract-widget-from-node-) | `TOO-Pack/utils` | Extract widget values from workflow nodes |
@@ -703,6 +706,142 @@ Interactive tool for cropping your image before output.
 
 If you use the image input then the cropping will apply to it. However the interactive preview works only with img_path input so you will need to use that.
 You can also use only img_path like you would with a Simple Image Loader
+
+</details>
+
+---
+
+###  TOO LoRA Grid 🧪
+
+<details>
+<summary><b><span style="color:#60a5fa;">Click to expand full documentation</span></b></summary>
+
+Modified KSampler to test loras and output an image grid.
+
+<img width="499" height="766" alt="Image" src="assets/ImageGridFromBatch.webp" />
+
+A ComfyUI node to test multiple LoRA files and compare their effects in an image grid, with optional labels and footer text.
+
+---
+
+## Inputs (high-level)
+- model: MODEL
+- clip: CLIP
+- vae: VAE
+- positive: CONDITIONING
+- negative: CONDITIONING
+- latent_image: LATENT — used as the sampling starting point
+- loras: STRING (multiline) — one entry per line (see format below)
+- seed, steps, cfg (float guidance), sampler_name, scheduler, denoise
+- grid_cols, grid_padding — grid layout controls
+- add_labels (bool), label_height, font_size, label_color, bg_color
+- footer_text — optional footer displayed beneath grid
+
+---
+
+## LoRA multiline format
+Each non-comment line is one grid cell. Lines starting with `#` are ignored.
+
+Supported entry forms:
+- `path/to/lora.safetensors`  
+  Apply LoRA at default strength 1.0 (if no explicit weight).
+- `path/to/lora.safetensors:0.8`  
+  Apply LoRA at explicit strength (float).
+- `path/to/lora.safetensors:"label"`  
+  A null slot — the node will sample WITHOUT applying any LoRA but will show the custom label. Useful for control comparisons.
+
+Notes:
+- If extension is omitted, the node will try common extensions: `.safetensors`, `.pt`, `.ckpt`.
+- You may include a filename without path; the node resolves via project LoRA folders (uses `folder_paths.get_full_path("loras", ...)`).
+
+Example `loras` widget content:
+```
+any_lora.safetensors:"no lora"
+# test LoRAs
+my_style_lora.safetensors:0.7
+other_lora:0.5
+missing_lora  # will be logged as not found
+```
+
+## Grid & label rendering
+- Labels and footer use PIL ImageFont:
+  - The node tries these fonts (in order): `arial.ttf`, `DejaVuSans.ttf`, `LiberationSans-Regular.ttf`.
+  - If none load, it falls back to `ImageFont.load_default()` (Pillow's bitmap font).
+- Footer text is wrapped to grid width and supports multi-line content.
+- Colors accept hex strings (e.g., `#ffffff` for white, `#111111` for dark background).
+- `grid_cols` controls number of columns; rows are computed automatically.
+
+---
+
+## Caching
+- The node caches per-entry decoded tensors and labels in an in-memory `_cache` keyed by a hash of:
+  - model/clip/vae/positive/negative object signatures, `loras` text, seed, steps, cfg, sampler/scheduler, denoise, and a short hash of the latent image bytes.
+- Cache avoids re-sampling identical requests; change any parameter or the latent image and a new sample will be produced.
+
+---
+
+## Examples
+- Compare several LoRAs at once:
+```
+baseline:"baseline"
+styleA.safetensors:0.8
+styleB.safetensors:0.5
+```
+- Compare base model vs LoRA:
+```
+base:"no lora"
+my_lora.safetensors:1.0
+```
+
+---
+
+## Tips
+- Use null slots (`:"label"`) to include a no-LoRA baseline in the grid for direct comparison.
+- Use `has_explicit_weight` (via `:0.8`) to show exact strength in labels.
+- Keep `grid_cols` reasonable for readability; increase padding or label height if text overlaps images.
+- If you run ComfyUI in a container, ensure fonts are installed for consistent label rendering.
+
+---
+
+## Limitations
+- One sample per LoRA entry — not intended for batch/randomized comparisons unless you feed different latents/seeds.
+- In-memory caching will not persist across process restarts.
+- The node tries to resolve LoRA paths via the project's LoRA folders; non-standard locations may not be found.
+
+</details>
+
+---
+
+### TOO Image Grid From Batch
+
+<details>
+<summary><b><span style="color:#60a5fa;">Click to expand full documentation</span></b></summary>
+
+Creates an image grid from a batch while preserving transparency (alpha channel).
+
+<img width="378" height="204" alt="Image" src="assets/TOO_ImageGridFromBatchWithAlpha.webp" />
+
+## Parameters
+
+### Images (required)
+The batch of images to arrange in a grid. Format: RGBA or RGB.
+
+### Grid Cols (required)
+Number of columns in the grid.
+
+### Grid Rows (required)
+Number of rows in the grid.
+
+### Padding (required)
+Space in pixels between images. Min: 0 | Max: 100 | Default: 0
+
+## Output
+A single image containing the grid composed of the batch images.
+
+## Notes
+- If the batch contains fewer images than the grid (rows × cols), missing cells are filled with transparency.
+- Transparency is fully preserved.
+- The batch images must have the same dimensions.
 
 </details>
 
