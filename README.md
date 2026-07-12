@@ -780,21 +780,6 @@ missing_lora  # will be logged as not found
 
 ---
 
-## Examples
-- Compare several LoRAs at once:
-```
-baseline:"baseline"
-styleA.safetensors:0.8
-styleB.safetensors:0.5
-```
-- Compare base model vs LoRA:
-```
-base:"no lora"
-my_lora.safetensors:1.0
-```
-
----
-
 ## Tips
 - Use null slots (`:"label"`) to include a no-LoRA baseline in the grid for direct comparison.
 - Use `has_explicit_weight` (via `:0.8`) to show exact strength in labels.
