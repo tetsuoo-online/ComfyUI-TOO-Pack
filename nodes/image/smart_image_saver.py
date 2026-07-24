@@ -277,7 +277,11 @@ class TOOSmartImageSaver:
         """Sauvegarde une image WEBP ou JPEG avec métadonnées EXIF"""
         # Sauvegarder l'image d'abord
         if output_format == "webp":
-            img.save(filepath, lossless=webp_lossless, quality=quality, method=6)
+            # method 6 n'apporte quasiment rien vs 4 en lossless (même taille,
+            # vérifié) mais coûte ~10x le temps d'encodage - lossy reste à 6
+            # (peu coûteux là, et ça aide vraiment la taille du fichier).
+            webp_method = 4 if webp_lossless else 6
+            img.save(filepath, lossless=webp_lossless, quality=quality, method=webp_method)
         else:  # jpg/jpeg
             img.save(filepath, quality=quality)
         
