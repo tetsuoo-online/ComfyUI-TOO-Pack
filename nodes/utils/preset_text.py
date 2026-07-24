@@ -73,7 +73,7 @@ class TOOPresetText:
             default_presets = {
                 "default negative": "worst quality, low quality, jpeg artifacts",
                 "remove": "\\b",
-                "regex : extract filename from": "([^\\\\/]+)_safetensors$"
+                "regex : extract filename from": "([^\\\\\/]+)_safetensors$"
             }
             cls.save_presets(presets_dir, default_presets)
             return default_presets

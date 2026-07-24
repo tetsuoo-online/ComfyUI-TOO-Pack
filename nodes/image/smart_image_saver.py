@@ -442,14 +442,11 @@ class TOOSmartImageSaver:
         if not text:
             return text
         
-        now = datetime.now()
+        if now is None:
+            now = datetime.now()
         
-        # Cas spécial: timestamp (doit être fait en premier)
-        if 'timestamp' in text:
-            text = text.replace('timestamp', str(int(now.timestamp())))
-        
-        # Remplacements simples
         replacements = {
+            'timestamp': str(int(now.timestamp())),
             'YYYY': now.strftime('%Y'),  # Année 4 chiffres
             'YY': now.strftime('%y'),    # Année 2 chiffres
             'MM': now.strftime('%m'),    # Mois 2 chiffres
@@ -459,10 +456,17 @@ class TOOSmartImageSaver:
             'ss': now.strftime('%S'),    # Seconde 2 chiffres
         }
         
-        for token, value in replacements.items():
-            text = text.replace(token, value)
+        # Ne remplacer que des suites de tokens bordées par des non-lettres,
+        # pour ne pas toucher aux mots comme "assets", "boss" ou "b4ss37".
+        # Ex: "render_YYYYMMDD" -> ok ; "assets" -> intact
+        token_alt = '|'.join(sorted(replacements, key=len, reverse=True))
+        pattern = re.compile(r'(?<![A-Za-z0-9])(?:%s)+(?![A-Za-z0-9])' % token_alt)
+        token_re = re.compile(token_alt)
         
-        return text
+        def _sub_run(match):
+            return token_re.sub(lambda m: replacements[m.group(0)], match.group(0))
+        
+        return pattern.sub(_sub_run, text)
     def _clean_model_name(self, model_name):
         """
         Nettoie le nom du modèle:
