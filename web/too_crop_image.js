@@ -1,4 +1,26 @@
 import { app } from "../../scripts/app.js";
+import { api } from "../../scripts/api.js";
+
+let _tooAccessToken = null;
+let _tooAccessTokenPromise = null;
+
+function getTooAccessToken() {
+    if (_tooAccessToken) return Promise.resolve(_tooAccessToken);
+    if (!_tooAccessTokenPromise) {
+        _tooAccessTokenPromise = fetch(api.apiURL('/too/view/token'))
+            .then((r) => r.json())
+            .then((data) => {
+                _tooAccessToken = data.token;
+                return _tooAccessToken;
+            })
+            .catch((e) => {
+                console.error("TOOCropImage: failed to fetch access token", e);
+                _tooAccessTokenPromise = null;
+                return null;
+            });
+    }
+    return _tooAccessTokenPromise;
+}
 
 app.registerExtension({
     name: "Comfy.TOOCropImage",
@@ -202,7 +224,8 @@ app.registerExtension({
                 this.currentPath = path;
 
                 try {
-                    const url = `/too/view/image?filename=${encodeURIComponent(path)}&type=path&t=${Date.now()}`;
+                    const token = await getTooAccessToken();
+                    const url = `/too/view/image?filename=${encodeURIComponent(path)}&type=path&t=${Date.now()}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
                     const response = await fetch(url);
                     
                     if (!response.ok) {
