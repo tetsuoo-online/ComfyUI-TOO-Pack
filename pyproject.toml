@@ -1,7 +1,7 @@
 [project]
 name = "too-pack"
 description = "A collection of utility nodes designed to enhance your ComfyUI workflow with smart image loading, Krita integration, widget extraction, and more."
-version = "1.1.4"
+version = "1.1.5"
 license = {file = "LICENSE"}
 dependencies = ["pillow>=9.0.0", "numpy>=1.20.0"]
 
@@ -11,5 +11,5 @@ Repository = "https://github.com/tetsuoo-online/Comfyui-TOO-Pack"
 
 [tool.comfy]
 PublisherId = "tetsuoo-online"
-DisplayName = "comfyui-TOO-Pack"
+DisplayName = "Comfyui-TOO-Pack"
 Icon = ""

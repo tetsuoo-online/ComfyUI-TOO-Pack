@@ -17,27 +17,6 @@ function chainCallback(object, property, callback) {
     }
 }
 
-let _tooAccessToken = null;
-let _tooAccessTokenPromise = null;
-
-function getTooAccessToken() {
-    if (_tooAccessToken) return Promise.resolve(_tooAccessToken);
-    if (!_tooAccessTokenPromise) {
-        _tooAccessTokenPromise = fetch(api.apiURL('/too/view/token'))
-            .then((r) => r.json())
-            .then((data) => {
-                _tooAccessToken = data.token;
-                return _tooAccessToken;
-            })
-            .catch((e) => {
-                console.error("TOOSimpleImageLoader: failed to fetch access token", e);
-                _tooAccessTokenPromise = null;
-                return null;
-            });
-    }
-    return _tooAccessTokenPromise;
-}
-
 function fitHeight(node) {
     node.setSize([node.size[0], node.computeSize([node.size[0], node.size[1]])[1]]);
     node?.graph?.setDirtyCanvas(true);
@@ -152,17 +131,12 @@ app.registerExtension({
 
                     this.parentEl.hidden = this.value.hidden;
 
-                    // Use custom route /too/view/image (requires access token)
-                    getTooAccessToken().then((token) => {
-                        if (token) {
-                            params.token = token;
-                        }
-                        const url = api.apiURL('/too/view/image?' + new URLSearchParams(params));
-                        console.log("TOOSimpleImageLoader: Loading image from", params.filename);
+                    // Use custom route /too/view/image
+                    const url = api.apiURL('/too/view/image?' + new URLSearchParams(params));
+                    console.log("TOOSimpleImageLoader: Loading image from", params.filename);
 
-                        this.imgEl.src = url;
-                        this.imgEl.hidden = false;
-                    });
+                    this.imgEl.src = url;
+                    this.imgEl.hidden = false;
                 };
 
                 previewWidget.callback = previewWidget.updateSource;

@@ -16,5 +16,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Publish Custom Node
         uses: Comfy-Org/publish-node-action@main
+        env:
+          COMFY_NODE_CHANGELOG: ${{ github.event.head_commit.message }}
         with:
           personal_access_token: ${{ secrets.REGISTRY_ACCESS_TOKEN }} ## Add your own personal access token to your Github Repository secrets and reference it here.
