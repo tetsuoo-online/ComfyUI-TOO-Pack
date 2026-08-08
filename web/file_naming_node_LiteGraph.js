@@ -513,10 +513,11 @@ nodeType.prototype.startPicking = function(targetWidget) {
                     };
                 };
                 
-                const addTextWithPicker = (label, value, callback) => {
-                    const textWidget = this.addWidget("text", label, value, callback);
+                const addTextWithPicker = (name, value, callback, label) => {
+                    const textWidget = this.addWidget("text", name, value, callback);
+                    textWidget.label = label !== undefined ? label : name;
                     
-                    const pickerBtn = this.addWidget("button", "🔗 Pick", null, () => {
+                    const pickerBtn = this.addWidget("button", `${name}_pick`, null, () => {
                         this.startPicking(textWidget);
                     });
                     pickerBtn.serialize = false;
@@ -544,21 +545,23 @@ nodeType.prototype.startPicking = function(targetWidget) {
                     for (let i = 0; i < this.data_fields.length; i++) {
                         const field = this.data_fields[i];
 
-                        this.addWidget("text", `name`, field.name, (v) => {
+                        const nameWidget = this.addWidget("text", `data_name_${i}`, field.name, (v) => {
                             this.data_fields[i].name = v;
 							this.setDirtyCanvas(true, true);
                         });
+                        nameWidget.label = "name";
 
-                        addTextWithPicker(`value (text or #id:widget)`, field.value || "", (v) => {
+                        addTextWithPicker(`data_value_${i}`, field.value || "", (v) => {
                             this.data_fields[i].value = v;
-                        });
+                        }, "value (text or #id:widget)");
 
-                        const delBtn = this.addWidget("button", "❌", null, () => {
+                        const delBtn = this.addWidget("button", `data_del_${i}`, null, () => {
                             this.data_fields.splice(i, 1);
                             this.buildUI();
 							this.setDirtyCanvas(true, true);  // ← forcer affichage
                         });
                         delBtn.serialize = false;
+                        delBtn.label = "❌";
                         styleButton(delBtn, "#3a1a1a");
                     }
 
@@ -576,7 +579,7 @@ nodeType.prototype.startPicking = function(targetWidget) {
 						this.setDirtyCanvas(true, true);
 						setTimeout(() => {
 							const newFieldWidgets = this.widgets.filter(w =>
-								w.name === "name" && w.value === newName
+								w.label === "name" && w.value === newName
 							);
 							if (newFieldWidgets[0]) {
 								newFieldWidgets[0].element?.focus();
@@ -613,11 +616,12 @@ nodeType.prototype.startPicking = function(targetWidget) {
                             this.properties.loras_extracts[i] = v;
                         });
 
-                        const delBtn = this.addWidget("button", "❌", null, () => {
+                        const delBtn = this.addWidget("button", `lora_del_${i}`, null, () => {
                             this.properties.loras_extracts.splice(i, 1);
                             this.buildUI();
                         });
                         delBtn.serialize = false;
+                        delBtn.label = "❌";
                         styleButton(delBtn, "#3a1a1a");
                     }
 
@@ -637,23 +641,27 @@ nodeType.prototype.startPicking = function(targetWidget) {
                     for (let i = 0; i < this.text_replace_pairs.length; i++) {
                         const pair = this.text_replace_pairs[i];
 
-                        this.addWidget("combo", `target`, pair.target || "", (v) => {
+                        const targetWidget = this.addWidget("combo", `replace_target_${i}`, pair.target || "", (v) => {
                             this.text_replace_pairs[i].target = v;
                         }, { values: allFields });
+                        targetWidget.label = "target";
 
-                        this.addWidget("text", `in`, pair.input, (v) => {
+                        const inWidget = this.addWidget("text", `replace_in_${i}`, pair.input, (v) => {
                             this.text_replace_pairs[i].input = v;
                         });
+                        inWidget.label = "in";
 
-                        this.addWidget("text", `out`, pair.output, (v) => {
+                        const outWidget = this.addWidget("text", `replace_out_${i}`, pair.output, (v) => {
                             this.text_replace_pairs[i].output = v;
                         });
+                        outWidget.label = "out";
 
-                        const delBtn = this.addWidget("button", "❌", null, () => {
+                        const delBtn = this.addWidget("button", `replace_del_${i}`, null, () => {
                             this.text_replace_pairs.splice(i, 1);
                             this.buildUI();
                         });
                         delBtn.serialize = false;
+                        delBtn.label = "❌";
                         styleButton(delBtn, "#3a1a1a");
                     }
 
