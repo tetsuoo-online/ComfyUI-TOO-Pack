@@ -77,36 +77,81 @@ class PresetManagementDialog extends ComfyDialog {
             width: 100%;
         `;
 
+        const valueLabelRow = document.createElement("div");
+        valueLabelRow.style.cssText = "display: flex; align-items: center; justify-content: space-between;";
+
         const valueLabel = document.createElement("label");
         valueLabel.textContent = "Value:";
         valueLabel.style.cssText = "color: #999; margin-right: 5px;";
 
-        const valueInput = document.createElement("input");
-        valueInput.type = "text";
-        valueInput.value = value;
-        valueInput.style.cssText = `
+        const multilineToggle = document.createElement("button");
+        multilineToggle.type = "button";
+        multilineToggle.style.cssText = `
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #999;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        `;
+
+        const valueFieldWrap = document.createElement("div");
+
+        const inputStyle = `
             background: #1a1a1a;
             border: 1px solid #444;
             color: #fff;
             padding: 8px;
             border-radius: 4px;
             width: 100%;
+            box-sizing: border-box;
+            font-family: inherit;
         `;
+
+        row.isMultiline = value.includes("\n");
+
+        const buildValueField = () => {
+            valueFieldWrap.innerHTML = "";
+            let field;
+            if (row.isMultiline) {
+                field = document.createElement("textarea");
+                field.rows = 10;
+                field.style.cssText = inputStyle + "resize: vertical;";
+            } else {
+                field = document.createElement("input");
+                field.type = "text";
+                field.style.cssText = inputStyle;
+            }
+            field.value = row.valueInput ? row.valueInput.value : value;
+            row.valueInput = field;
+            valueFieldWrap.appendChild(field);
+            multilineToggle.textContent = row.isMultiline ? "Multiline ☑" : "Multiline ☐";
+        };
+
+        multilineToggle.onclick = () => {
+            row.isMultiline = !row.isMultiline;
+            buildValueField();
+        };
+
+        buildValueField();
+
+        valueLabelRow.appendChild(valueLabel);
+        valueLabelRow.appendChild(multilineToggle);
 
         const nameCol = document.createElement("div");
         nameCol.appendChild(nameLabel);
         nameCol.appendChild(nameInput);
 
         const valueCol = document.createElement("div");
-        valueCol.appendChild(valueLabel);
-        valueCol.appendChild(valueInput);
+        valueCol.appendChild(valueLabelRow);
+        valueCol.appendChild(valueFieldWrap);
 
         row.appendChild(nameCol);
         row.appendChild(valueCol);
 
         // Store references for later retrieval
         row.nameInput = nameInput;
-        row.valueInput = valueInput;
         row.originalName = name;
 
         return row;
